@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.jms.Destination;
+
 /**
  * Created by dmfrey on 8/26/16.
  */
@@ -19,6 +21,9 @@ public class SampleController {
 
     @Autowired
     private JmsTemplate jmsTemplate;
+
+    @Autowired
+    private Destination myQueue;
 
     @RequestMapping( method = RequestMethod.GET )
     public String getForm() {
@@ -38,7 +43,7 @@ public class SampleController {
         MessageCreator messageCreator = session -> session.createTextMessage( message );
 
         log.info( "postXml : sending a new message" );
-        jmsTemplate.send( "my-queue", messageCreator );
+        jmsTemplate.send( myQueue, messageCreator );
 
         log.debug( "postXml : exit" );
         return "redirect:/testSubmit.html";

@@ -1,14 +1,20 @@
 package io.pivotal.dmfrey.distributed.jms;
 
+import static io.pivotal.dmfrey.distributed.dao.model.Sample.Event;
+
 import io.pivotal.dmfrey.distributed.dao.model.Sample;
 import io.pivotal.dmfrey.distributed.dao.model.SampleXml;
 import io.pivotal.dmfrey.distributed.dao.service.SampleService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Created by dmfrey on 8/26/16.
@@ -18,16 +24,19 @@ import java.sql.Timestamp;
 public class Receiver {
 
     private final SampleService sampleService;
+    private final Unmarshaller unmarshaller;
 
-    public Receiver( final SampleService sampleService ) {
+    @Autowired
+    public Receiver( final SampleService sampleService, final Unmarshaller unmarshaller ) {
 
         this.sampleService = sampleService;
+        this.unmarshaller = unmarshaller;
 
     }
 
     @JmsListener( destination = "my-queue" )
     @Transactional
-    public void onMessage( String message ) {
+    public void onMessage( String message ) throws IOException {
         log.debug( "onMessage : enter" );
 
         log.info( "onMessage : message = " + message );
@@ -39,10 +48,9 @@ public class Receiver {
         log.debug( "onMessage : exit" );
     }
 
-    private Sample parseSampleFromMessage( final String message ) {
+    private Sample parseSampleFromMessage( final String message ) throws IOException {
 
-        Sample sample = new Sample();
-        sample.setMessage( message );
+        Sample sample = (Sample) unmarshaller.unmarshal( new StreamSource( new StringReader( message ) ) );
 
         log.debug( "parseSampleFromMessage : sample = " + sample.toString() );
 

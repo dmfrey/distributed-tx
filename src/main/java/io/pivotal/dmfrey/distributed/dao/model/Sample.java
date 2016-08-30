@@ -2,10 +2,7 @@ package io.pivotal.dmfrey.distributed.dao.model;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
@@ -14,6 +11,8 @@ import java.sql.Timestamp;
 @Entity
 @Data
 public class Sample {
+
+    public enum Event { Billing, Alert };
 
     @Id
     @GeneratedValue
@@ -24,5 +23,8 @@ public class Sample {
 
     @Column
     private Timestamp created;
+
+    @Enumerated( EnumType.STRING )
+    private Event event;
 
 }
